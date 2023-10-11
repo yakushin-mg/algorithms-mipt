@@ -1,0 +1,53 @@
+/*Найти среднее геометрическое на отрезке [r;l] (корень степени r - l + 1)
+1 <= number <= 3* 10^5
+0.01 <= sound_mandragora <= 10^3
+1 <= quality <= 10^5
+0 <= boarder <= number - 1 */
+
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+#include <vector>
+using std::vector;
+void Geometry(vector<long double>& prefix_sum, vector<double>& request,
+              int quality) {
+  long double sum;
+  const int kCount{6};
+  for (int i = 0; i < (quality - 1); i += 2) {
+    double degree = request[i + 1] - request[i] + 1;
+    if (request[i] == 0) {
+      sum = prefix_sum[request[i + 1]];
+      std::cout << std::fixed << std::setprecision(kCount)
+                << exp((1 / degree) * sum) << std::endl;
+    } else {
+      sum = prefix_sum[request[i + 1]] - prefix_sum[request[i] - 1];
+      std::cout << std::fixed << std::setprecision(kCount)
+                << exp((1 / degree) * sum) << std::endl;
+    }
+  }
+}
+int main() {
+  int number;
+  std::cin >> number;
+  vector<long double> sound(number);
+  long double sound_mandragora;
+  for (int i = 0; i < number; i++) {
+    std::cin >> sound_mandragora;
+    sound[i] = sound_mandragora;
+  }
+  int quality;
+  std::cin >> quality;
+  quality *= 2;
+  double boarder;
+  vector<double> request(quality);
+  for (int i = 0; i < (quality); i++) {
+    std::cin >> boarder;
+    request[i] = boarder;
+  }
+  vector<long double> prefix_sum(number);
+  prefix_sum[0] = log(sound[0]);
+  for (int i = 1; i < number; i++) {
+    prefix_sum[i] = prefix_sum[i - 1] + log(sound[i]);
+  }
+  Geometry(prefix_sum, request, quality);
+}
