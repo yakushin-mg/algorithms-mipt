@@ -1,53 +1,42 @@
 /*Найти среднее геометрическое на отрезке [r;l] (корень степени r - l + 1)
-1 <= number <= 3* 10^5
+1 <= len_array <= 3* 10^5
 0.01 <= sound_mandragora <= 10^3
 1 <= quality <= 10^5
-0 <= boarder <= number - 1 */
+0 <= boarder <= len_array - 1
+*/
 
 #include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <vector>
 using std::vector;
-void Geometry(vector<long double>& prefix_sum, vector<double>& request,
-              int quality) {
+void Geometry(vector<long double>& prefix_sum, size_t left_boarder,
+              size_t right_boarder) {
   long double sum;
-  const int kCount{6};
-  for (int i = 0; i < (quality - 1); i += 2) {
-    double degree = request[i + 1] - request[i] + 1;
-    if (request[i] == 0) {
-      sum = prefix_sum[request[i + 1]];
-      std::cout << std::fixed << std::setprecision(kCount)
-                << exp((1 / degree) * sum) << std::endl;
-    } else {
-      sum = prefix_sum[request[i + 1]] - prefix_sum[request[i] - 1];
-      std::cout << std::fixed << std::setprecision(kCount)
-                << exp((1 / degree) * sum) << std::endl;
-    }
-  }
+  const int kPrecision{6};
+  sum = prefix_sum[right_boarder + 1] - prefix_sum[left_boarder];
+  double degree = right_boarder - left_boarder + 1;
+  std::cout << std::fixed << std::setprecision(kPrecision)
+            << exp((1 / degree) * sum) << std::endl;
 }
+
 int main() {
-  int number;
-  std::cin >> number;
-  vector<long double> sound(number);
-  long double sound_mandragora;
-  for (int i = 0; i < number; i++) {
-    std::cin >> sound_mandragora;
-    sound[i] = sound_mandragora;
+  size_t len_array;
+  std::cin >> len_array;
+  vector<long double> sound(len_array + 1, 0);
+  for (size_t i = 1; i <= len_array; i++) {
+    std::cin >> sound[i];
   }
-  int quality;
-  std::cin >> quality;
-  quality *= 2;
-  double boarder;
-  vector<double> request(quality);
-  for (int i = 0; i < (quality); i++) {
-    std::cin >> boarder;
-    request[i] = boarder;
-  }
-  vector<long double> prefix_sum(number);
-  prefix_sum[0] = log(sound[0]);
-  for (int i = 1; i < number; i++) {
+  vector<long double> prefix_sum(len_array + 1, 0);
+  for (size_t i = 1; i <= len_array; i++) {
     prefix_sum[i] = prefix_sum[i - 1] + log(sound[i]);
   }
-  Geometry(prefix_sum, request, quality);
+  size_t number_requests;
+  std::cin >> number_requests;
+  size_t left_boarder;
+  size_t right_boarder;
+  for (size_t i = 0; i < number_requests; i++) {
+    std::cin >> left_boarder >> right_boarder;
+    Geometry(prefix_sum, left_boarder, right_boarder);
+  }
 }
