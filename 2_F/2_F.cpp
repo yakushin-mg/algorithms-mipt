@@ -1,3 +1,8 @@
+/* Написать двоичную кучу с операциями : insert, getMin, extractMin, decreaseKey
+1 <= number_requests <= 10^6
+- (10^9) <= element <= 10^9
+0 <= delta <= 10^9 */
+
 #include <iostream>
 #include <string>
 #include <vector>
