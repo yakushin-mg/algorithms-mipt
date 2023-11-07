@@ -1,4 +1,5 @@
-/* 1 <= number_requests <= 10^5
+/* Очередь с обычными гоблинами (встают в конец очереди) и привилегированными (встают в середину очереди)
+   1 <= number_requests <= 10^5
    1 <= element <= number_requests*/
 
 #include <deque>
