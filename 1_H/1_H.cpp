@@ -2,10 +2,6 @@
 1 <= length <= 10^5
 abs(array[i]) <= 10^9 */
 
-/*Написать алгоритм быстрой сортировки
-1 <= length <= 10^5
-abs(array[i]) <= 10^9 */
-
 #include <iostream>
 #include <vector>
 using std::vector;
