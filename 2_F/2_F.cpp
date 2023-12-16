@@ -6,113 +6,124 @@
 #include <iostream>
 #include <string>
 #include <vector>
-using std::swap;
-using std::vector;
-void SiftUp(vector<long long>& heap, size_t son) {
+
+class MinHeap {
+ public:
+  void Insert(long long element);
+  void ExtractMin();
+  long long GetMin();
+  void DecreaseKey(size_t index, long long delta);
+
+ private:
+  std::vector<long long> heap_;
+  std::vector<long long> values_requests_;
+
+  void SiftUp(size_t son);
+  void SiftDown(size_t parent);
+  void FillingValues(long long element);
+  size_t FindingElement(long long element, size_t parent);
+};
+
+void MinHeap::Insert(long long element) {
+  FillingValues(element);
+  heap_.push_back(element);
+  SiftUp(heap_.size() - 1);
+}
+
+long long MinHeap::GetMin() {
+  FillingValues(0);
+  return heap_[0];
+}
+
+void MinHeap::ExtractMin() {
+  FillingValues(0);
+  std::swap(heap_[0], heap_[heap_.size() - 1]);
+  heap_.pop_back();
+  SiftDown(0);
+}
+
+void MinHeap::DecreaseKey(size_t index, long long delta) {
+  FillingValues(0);
+  size_t index_heap = FindingElement(values_requests_[index], 0);
+  long long value = heap_[index_heap] - delta;
+  heap_[index_heap] = value;
+  SiftUp(index_heap);
+  values_requests_[index] = value;
+}
+
+void MinHeap::SiftUp(size_t son) {
   if (son > 0) {
     size_t parent = (son - 1) / 2;
-    if (heap[son] < heap[parent]) {
-      swap(heap[son], heap[parent]);
-      SiftUp(heap, parent);
+    if (heap_[son] < heap_[parent]) {
+      std::swap(heap_[son], heap_[parent]);
+      SiftUp(parent);
     }
   }
 }
-void SiftDown(vector<long long>& heap, size_t parent) {
-  if ((parent * 2 + 1) < heap.size()) {
-    size_t left_son = parent * 2 + 1;
-    if ((parent * 2 + 2) < heap.size()) {
-      size_t right_son = parent * 2 + 2;
-      if (heap[parent] > heap[left_son] && heap[parent] > heap[right_son]) {
-        if (heap[left_son] < heap[right_son]) {
-          swap(heap[parent], heap[left_son]);
-          SiftDown(heap, left_son);
-        } else {
-          swap(heap[parent], heap[right_son]);
-          SiftDown(heap, right_son);
-        }
-      } else if (heap[parent] > heap[left_son]) {
-        swap(heap[parent], heap[left_son]);
-        SiftDown(heap, left_son);
-      } else if (heap[parent] > heap[right_son]) {
-        swap(heap[parent], heap[right_son]);
-        SiftDown(heap, right_son);
-      }
-    } else {
-      if (heap[parent] > heap[left_son]) {
-        swap(heap[parent], heap[left_son]);
-        SiftDown(heap, left_son);
-      }
-    }
+
+void MinHeap::SiftDown(size_t parent) {
+  if (parent * 2 + 1 >= heap_.size()) {
+    return;
+  }
+  size_t smallest_child = parent * 2 + 1;
+  if (smallest_child + 1 < heap_.size() &&
+      heap_[smallest_child + 1] < heap_[smallest_child]) {
+    smallest_child += 1;
+  }
+  if (heap_[smallest_child] < heap_[parent]) {
+    std::swap(heap_[smallest_child], heap_[parent]);
+    SiftDown(smallest_child);
   }
 }
-void Insert(vector<long long>& heap, long long element) {
-  heap.push_back(element);
-  SiftUp(heap, heap.size() - 1);
+
+void MinHeap::FillingValues(long long element) {
+  values_requests_.push_back(element);
 }
-void GetMin(vector<long long>& heap) { std::cout << heap[0] << "\n"; }
-void ExtractMin(vector<long long>& heap) {
-  swap(heap[0], heap[heap.size() - 1]);
-  heap.pop_back();
-  SiftDown(heap, 0);
-}
-size_t FindingElement(vector<long long>& heap, long long element,
-                      size_t parent) {
+
+size_t MinHeap::FindingElement(long long element, size_t parent) {
   size_t index_heap = 0;
-  if (element == heap[parent]) {
+  if (element == heap_[parent]) {
     index_heap = parent;
     return index_heap;
   }
   size_t left_son = parent * 2 + 1;
   size_t right_son = parent * 2 + 2;
-  if ((left_son < heap.size()) && (element >= heap[left_son])) {
-    index_heap += FindingElement(heap, element, left_son);
+  if ((left_son < heap_.size()) && (element >= heap_[left_son])) {
+    index_heap += FindingElement(element, left_son);
   }
-  if ((right_son < heap.size()) && (element >= heap[right_son])) {
-    index_heap += FindingElement(heap, element, right_son);
+  if ((right_son < heap_.size()) && (element >= heap_[right_son])) {
+    index_heap += FindingElement(element, right_son);
   }
   return index_heap;
 }
-long long DecreaseKey(vector<long long>& heap, size_t index_heap) {
-  long long delta;
-  std::cin >> delta;
-  long long value = heap[index_heap] - delta;
-  heap[index_heap] = value;
-  SiftUp(heap, index_heap);
-  return value;
-}
-void Requests(size_t number_requests) {
-  vector<long long> heap;
-  vector<long long> values_requests;
-  std::string request;
-  for (size_t i = 0; i < number_requests; i++) {
-    std::cin >> request;
-    if (request == "insert") {
-      long long element;
-      std::cin >> element;
-      values_requests.push_back(element);
-      Insert(heap, element);
-    } else if (request == "getMin") {
-      GetMin(heap);
-      values_requests.push_back(0);
-    } else if (request == "extractMin") {
-      ExtractMin(heap);
-      values_requests.push_back(0);
-    } else {
-      values_requests.push_back(0);
-      size_t index;
-      std::cin >> index;
-      index -= 1;
-      size_t index_heap = FindingElement(heap, values_requests[index], 0);
-      long long value = DecreaseKey(heap, index_heap);
-      values_requests[index] = value;
-    }
-  }
-}
+
 int main() {
   std::ios_base::sync_with_stdio(false);
   std::cin.tie(0);
   std::cout.tie(0);
+
   size_t number_requests;
   std::cin >> number_requests;
-  Requests(number_requests);
+
+  MinHeap heap;
+
+  for (size_t i = 0; i < number_requests; i++) {
+    std::string request;
+    std::cin >> request;
+
+    if (request == "insert") {
+      long long element;
+      std::cin >> element;
+      heap.Insert(element);
+    } else if (request == "getMin") {
+      std::cout << heap.GetMin() << "\n";
+    } else if (request == "extractMin") {
+      heap.ExtractMin();
+    } else {
+      size_t index;
+      long long delta;
+      std::cin >> index >> delta;
+      heap.DecreaseKey(index - 1, delta);
+    }
+  }
 }
