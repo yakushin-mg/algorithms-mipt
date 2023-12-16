@@ -1,104 +1,114 @@
 /* Очередь с поддержкой минимума и операциями: enqueue, dequeue, front, size, clear, min
+   для поддержки минимума использовал deque
    1 <= number_requests <= 2 * (10^5)
    1 <= element <= (10^9) */
 
 #include <deque>
 #include <iostream>
+#include <queue>
 #include <string>
 
-void IsEmpty() {
-  std::cout << "error"
-            << "\n";
+class QueueWithMin {
+ public:
+  void Enqueue(long long element);
+  long long Dequeue();
+  long long Front();
+  long long Size();
+  void Clear();
+  long long Min();
+  bool IsEmpty();
+
+ private:
+  std::queue<long long> line_;
+  std::deque<long long> min_element_;
+
+  void UpdateMin(long long element);
+  void PopMin(long long element);
+};
+
+void QueueWithMin::Enqueue(long long element) {
+  line_.push(element);
+  UpdateMin(element);
 }
 
-using std::deque;
+long long QueueWithMin::Dequeue() {
+  long long element;
+  element = line_.front();
+  line_.pop();
+  PopMin(element);
+  return element;
+}
 
-void FillingDeque(deque<int>& min_element, int element) {
-  while ((!min_element.empty()) && (!(min_element.back() <= element))) {
-    min_element.pop_back();
+long long QueueWithMin::Front() { return line_.front(); }
+
+long long QueueWithMin::Size() { return line_.size(); }
+
+void QueueWithMin::Clear() {
+  while (!line_.empty()) {
+    line_.pop();
   }
-  min_element.push_back(element);
+  min_element_.clear();
 }
 
-void Enqueue(deque<int>& line, deque<int>& min_element) {
-  int element;
-  std::cin >> element;
-  line.push_back(element);
-  FillingDeque(min_element, element);
-  std::cout << "ok"
-            << "\n";
-}
+long long QueueWithMin::Min() { return min_element_.front(); }
 
-void Front(deque<int>& line) {
-  if (line.empty()) {
-    IsEmpty();
-  } else {
-    std::cout << line.front() << "\n";
+bool QueueWithMin::IsEmpty() { return (line_.empty()); }
+
+void QueueWithMin::UpdateMin(long long element) {
+  while ((!min_element_.empty()) && (!(min_element_.back() <= element))) {
+    min_element_.pop_back();
   }
+  min_element_.push_back(element);
 }
 
-void PopDeque(deque<int>& min_element, int element) {
-  if ((min_element.front()) == element) {
-    min_element.pop_front();
-  }
-}
-
-void Dequeue(deque<int>& line, deque<int>& min_element) {
-  if (line.empty()) {
-    IsEmpty();
-  } else {
-    int element;
-    element = line.front();
-    line.pop_front();
-    PopDeque(min_element, element);
-    std::cout << element << "\n";
-  }
-}
-
-void Size(deque<int>& line) { std::cout << line.size() << "\n"; }
-
-void ClearDeque(deque<int>& line) { line.clear(); }
-
-void Clear(deque<int>& line) {
-  ClearDeque(line);
-  std::cout << "ok"
-            << "\n";
-}
-
-void Min(deque<int>& line, deque<int>& min_element) {
-  if (line.empty()) {
-    IsEmpty();
-  } else {
-    std::cout << min_element.front() << "\n";
-  }
-}
-
-void Requests(size_t number_requests) {
-  deque<int> line;
-  std::string request;
-  deque<int> min_element;
-
-  for (size_t i = 0; i < number_requests; i++) {
-    std::cin >> request;
-    if (request == "enqueue") {
-      Enqueue(line, min_element);
-    } else if (request == "dequeue") {
-      Dequeue(line, min_element);
-    } else if (request == "front") {
-      Front(line);
-    } else if (request == "size") {
-      Size(line);
-    } else if (request == "clear") {
-      Clear(line);
-      ClearDeque(min_element);
-    } else {
-      Min(line, min_element);
-    }
+void QueueWithMin::PopMin(long long element) {
+  if ((min_element_.front()) == element) {
+    min_element_.pop_front();
   }
 }
 
 int main() {
   size_t number_requests;
   std::cin >> number_requests;
-  Requests(number_requests);
+
+  QueueWithMin queue;
+
+  for (size_t i = 0; i < number_requests; i++) {
+    std::string request;
+    std::cin >> request;
+    if (request == "enqueue") {
+      long long element;
+      std::cin >> element;
+      queue.Enqueue(element);
+      std::cout << "ok"
+                << "\n";
+    } else if (request == "dequeue") {
+      if (queue.IsEmpty()) {
+        std::cout << "error"
+                  << "\n";
+      } else {
+        std::cout << queue.Dequeue() << "\n";
+      }
+    } else if (request == "front") {
+      if (queue.IsEmpty()) {
+        std::cout << "error"
+                  << "\n";
+      } else {
+        std::cout << queue.Front() << "\n";
+      }
+    } else if (request == "size") {
+      std::cout << queue.Size() << "\n";
+    } else if (request == "clear") {
+      queue.Clear();
+      std::cout << "ok"
+                << "\n";
+    } else {
+      if (queue.IsEmpty()) {
+        std::cout << "error"
+                  << "\n";
+      } else {
+        std::cout << queue.Min() << "\n";
+      }
+    }
+  }
 }
