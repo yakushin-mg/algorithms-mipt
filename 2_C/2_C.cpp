@@ -4,63 +4,48 @@
 
 #include <deque>
 #include <iostream>
+#include <queue>
 
-using std::deque;
+class GoblinsQueue {
+ public:
+  void OrdinaryGoblin(int element);
+  void VipGoblin(int element);
+  int GoblinLeaves();
 
-void OrdinaryGoblin(deque<int>& second_half) {
-  int element;
-  std::cin >> element;
-  second_half.push_back(element);
+ private:
+  std::queue<int> first_half_;
+  std::deque<int> second_half_;
+
+  void EqualityHalves();
+};
+
+void GoblinsQueue::OrdinaryGoblin(int element) {
+  second_half_.push_back(element);
+  EqualityHalves();
 }
 
-void VipGoblin(deque<int>& first_half, deque<int>& second_half) {
-  int element;
-  std::cin >> element;
-  if (first_half.size() <= second_half.size()) {
-    first_half.push_back(element);
+void GoblinsQueue::VipGoblin(int element) {
+  if (first_half_.size() <= second_half_.size()) {
+    first_half_.push(element);
   } else {
-    second_half.push_front(element);
+    second_half_.push_front(element);
   }
 }
 
-void GoblinAtTheShaman(deque<int>& first_half) {
-  std::cout << first_half.front() << "\n";
-  first_half.pop_front();
+int GoblinsQueue::GoblinLeaves() {
+  int goblin_number = first_half_.front();
+  first_half_.pop();
+  EqualityHalves();
+  return goblin_number;
 }
 
-void EqualityHalves(deque<int>& first_half, deque<int>& second_half) {
-  if (first_half.size() < second_half.size()) {
-    int element = second_half.front();
-    second_half.pop_front();
-    first_half.push_back(element);
+void GoblinsQueue::EqualityHalves() {
+  if (first_half_.size() >= second_half_.size()) {
+    return;
   }
-}
-
-void Goblins(size_t number_requests) {
-  std::ios_base::sync_with_stdio(false);
-  std::cin.tie(0);
-  std::cout.tie(0);
-
-  deque<int> first_half;
-  deque<int> second_half;
-
-  char request;
-  for (size_t i = 0; i < number_requests; i++) {
-    std::cin >> request;
-    switch (request) {
-      case '+':
-        OrdinaryGoblin(second_half);
-        EqualityHalves(first_half, second_half);
-        break;
-      case '*':
-        VipGoblin(first_half, second_half);
-        break;
-      case '-':
-        GoblinAtTheShaman(first_half);
-        EqualityHalves(first_half, second_half);
-        break;
-    }
-  }
+  int element = second_half_.front();
+  second_half_.pop_front();
+  first_half_.push(element);
 }
 
 int main() {
@@ -68,7 +53,27 @@ int main() {
   std::cin.tie(0);
   std::cout.tie(0);
 
+  GoblinsQueue queue;
+
   size_t number_requests;
   std::cin >> number_requests;
-  Goblins(number_requests);
+
+  for (size_t i = 0; i < number_requests; i++) {
+    char request;
+    int element;
+    std::cin >> request;
+    switch (request) {
+      case '+':
+        std::cin >> element;
+        queue.OrdinaryGoblin(element);
+        break;
+      case '*':
+        std::cin >> element;
+        queue.VipGoblin(element);
+        break;
+      case '-':
+        std::cout << queue.GoblinLeaves() << "\n";
+        break;
+    }
+  }
 }
