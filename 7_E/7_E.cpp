@@ -10,32 +10,41 @@
 
 class Graph {
  public:
-  std::vector<std::vector<size_t>> roads;
-  std::map<std::pair<size_t, size_t>, std::pair<size_t, size_t>> repeat_number;
-
   void operator>>(std::istream& input) {
     size_t points_number;
     size_t roads_number;
     input >> points_number;
     input >> roads_number;
-    roads.resize(points_number + 1);
+    roads_.resize(points_number + 1);
     for (size_t i = 0; i < roads_number; i++) {
       size_t from;
       size_t destination;
       input >> from;
       input >> destination;
-      roads[from].push_back(destination);
-      roads[destination].push_back(from);
-      repeat_number[{from, destination}].first = i + 1;
-      repeat_number[{from, destination}].second++;
-      repeat_number[{destination, from}].first = i + 1;
-      repeat_number[{destination, from}].second++;
+      roads_[from].push_back(destination);
+      roads_[destination].push_back(from);
+      repeat_number_[{from, destination}].first = i + 1;
+      repeat_number_[{from, destination}].second++;
+      repeat_number_[{destination, from}].first = i + 1;
+      repeat_number_[{destination, from}].second++;
     }
   }
 
-  std::set<size_t> bridges;
+  size_t GetPointsNumber() { return roads_.size(); }
+
+  std::vector<size_t> GetRoads(size_t from) { return roads_[from]; }
+
+  size_t GetRoadNumber(size_t from, size_t destination) {
+    return repeat_number_[{from, destination}].first;
+  }
+
+  size_t GetRepeatNumber(size_t from, size_t destination) {
+    return repeat_number_[{from, destination}].second;
+  }
 
  private:
+  std::vector<std::vector<size_t>> roads_;
+  std::map<std::pair<size_t, size_t>, std::pair<size_t, size_t>> repeat_number_;
 };
 
 struct Time {
@@ -49,7 +58,7 @@ void DFS(Graph& graph, size_t vertex, size_t parent, std::set<size_t>& bridges,
   time.in[vertex] = time.timer++;
   time.out[vertex] = time.in[vertex];
   used[vertex] = true;
-  for (size_t destination : graph.roads[vertex]) {
+  for (size_t destination : graph.GetRoads(vertex)) {
     if (destination == parent) {
       continue;
     }
@@ -59,8 +68,8 @@ void DFS(Graph& graph, size_t vertex, size_t parent, std::set<size_t>& bridges,
       DFS(graph, destination, vertex, bridges, time, used);
       time.out[vertex] = std::min(time.out[vertex], time.out[destination]);
       if (time.out[destination] > time.in[vertex]) {
-        if (graph.repeat_number[{vertex, destination}].second == 1) {
-          bridges.insert(graph.repeat_number[{vertex, destination}].first);
+        if (graph.GetRepeatNumber(vertex, destination) == 1) {
+          bridges.insert(graph.GetRoadNumber(vertex, destination));
         }
       }
     }
@@ -70,10 +79,11 @@ void DFS(Graph& graph, size_t vertex, size_t parent, std::set<size_t>& bridges,
 std::set<size_t> FindBridges(Graph& graph) {
   std::set<size_t> bridges;
   Time time;
-  time.in.resize(graph.roads.size());
-  time.out.resize(graph.roads.size());
-  std::vector<bool> used(graph.roads.size());
-  for (size_t i = 1; i < graph.roads.size(); i++) {
+  size_t points_number = graph.GetPointsNumber();
+  time.in.resize(points_number);
+  time.out.resize(points_number);
+  std::vector<bool> used(points_number);
+  for (size_t i = 1; i < points_number; i++) {
     if (!used[i]) {
       DFS(graph, i, 0, bridges, time, used);
     }
