@@ -1,4 +1,4 @@
-/*  Есть граф из N (points_number_) городов. 
+/*  Есть граф из N (points_number_) городов.
     Нужно найти отрицательный цикл и вывести его, если он существует.
 
     0 <= points_number_ <= 100
@@ -36,7 +36,7 @@ class Graph {
     }
   }
 
-  std::vector<Edge> Roads() { return roads_; }
+  const std::vector<Edge>& Roads() const { return roads_; }
 
   size_t PointsNumber() const { return points_number_; }
 
@@ -45,13 +45,13 @@ class Graph {
   size_t points_number_;
 };
 
-void FordBellman(Graph& graph, std::vector<size_t>& cycle) {
-  size_t points_number = graph.PointsNumber();
-  std::vector<long long> dist(points_number + 1, cKInf);
+std::vector<size_t> FindNegativeCycle(const Graph& graph) {
+  const size_t cPointsNumber = graph.PointsNumber();
+  std::vector<long long> dist(cPointsNumber + 1, cKInf);
   dist[1] = 0;
-  std::vector<size_t> prev_vertex(points_number + 1, 0);
-  for (size_t i = 0; i < points_number - 1; i++) {
-    for (Edge& edge : graph.Roads()) {
+  std::vector<size_t> prev_vertex(cPointsNumber + 1, 0);
+  for (size_t i = 0; i < cPointsNumber - 1; i++) {
+    for (const Edge& edge : graph.Roads()) {
       if (dist[edge.to] > dist[edge.from] + edge.weight) {
         dist[edge.to] = dist[edge.from] + edge.weight;
         prev_vertex[edge.to] = edge.from;
@@ -59,18 +59,19 @@ void FordBellman(Graph& graph, std::vector<size_t>& cycle) {
     }
   }
   size_t neg_vertex = 0;
-  for (Edge& edge : graph.Roads()) {
+  for (const Edge& edge : graph.Roads()) {
     if (dist[edge.to] > dist[edge.from] + edge.weight) {
       dist[edge.to] = dist[edge.from] + edge.weight;
       prev_vertex[edge.to] = edge.from;
       neg_vertex = edge.to;
     }
   }
+  std::vector<size_t> cycle;
   if (neg_vertex == 0) {
-    return;
+    return cycle;
   }
   size_t start_cycle = neg_vertex;
-  for (size_t i = 0; i < points_number; i++) {
+  for (size_t i = 0; i < cPointsNumber; i++) {
     start_cycle = prev_vertex[start_cycle];
   }
   size_t cur_vertex = start_cycle;
@@ -80,14 +81,14 @@ void FordBellman(Graph& graph, std::vector<size_t>& cycle) {
   }
   cycle.push_back(cur_vertex);
   std::reverse(cycle.begin(), cycle.end());
+  return cycle;
 }
 
 int main() {
   Graph graph;
   graph >> std::cin;
 
-  std::vector<size_t> cycle;
-  FordBellman(graph, cycle);
+  std::vector<size_t> cycle = FindNegativeCycle(graph);
   if (cycle.empty()) {
     std::cout << "NO"
               << "\n";
