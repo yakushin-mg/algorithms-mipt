@@ -4,7 +4,7 @@
 
     0 <= graph_number <= 5
     0 <= points_number_ <= 60000
-    0 <= roads_nubmer <= 200000
+    0 <= roads_number <= 200000
 
 */
 
@@ -12,7 +12,7 @@
 #include <queue>
 #include <vector>
 
-const int cKInf = 2009000999; // указано в задаче
+const int cKInf = 2009000999;  // указано в задаче
 
 struct Edge {
   size_t from;
@@ -39,7 +39,7 @@ class Graph {
     }
   }
 
-  std::vector<Edge> Roads(size_t from) { return roads_[from]; }
+  const std::vector<Edge>& Roads(size_t from) const { return roads_[from]; }
 
   size_t PointsNumber() const { return points_number_; }
 
@@ -48,18 +48,21 @@ class Graph {
   size_t points_number_;
 };
 
-void Dijkstra(Graph& graph, size_t start, std::vector<int>& dist) {
-  dist.assign(graph.PointsNumber(), cKInf);
+std::vector<int> FindDistance(const Graph& graph, size_t start) {
+  std::vector<int> dist(graph.PointsNumber(), cKInf);
   dist[start] = 0;
   std::priority_queue<std::pair<int, size_t>> heap;
   std::vector<bool> visited(graph.PointsNumber(), false);
   heap.push({dist[start], start});
   while (!heap.empty()) {
-    std::pair<int, size_t> top = heap.top();
-    heap.pop();
-    while (!heap.empty() && (visited[top.second])) {
-      top = heap.top();
-      heap.pop();
+    std::pair<int, size_t> top;
+    for (size_t i = 1; i <= heap.size(); i++) {
+      if ((i == 1) || visited[top.second]) {
+        top = heap.top();
+        heap.pop();
+      } else {
+        break;
+      }
     }
     if (heap.empty() && (visited[top.second])) {
       break;
@@ -68,13 +71,14 @@ void Dijkstra(Graph& graph, size_t start, std::vector<int>& dist) {
     if (top.first > dist[top.second]) {
       continue;
     }
-    for (Edge& edge : graph.Roads(top.second)) {
+    for (const Edge& edge : graph.Roads(top.second)) {
       if (dist[edge.to] > dist[edge.from] + edge.weight) {
         dist[edge.to] = dist[edge.from] + edge.weight;
         heap.push({dist[edge.to] * (-1), edge.to});
       }
     }
   }
+  return dist;
 }
 
 int main() {
@@ -85,8 +89,7 @@ int main() {
     graph >> std::cin;
     size_t start;
     std::cin >> start;
-    std::vector<int> dist;
-    Dijkstra(graph, start, dist);
+    std::vector<int> dist = FindDistance(graph, start);
     for (size_t i = 0; i < dist.size(); i++) {
       if (dist[i] >= cKInf) {
         std::cout << cKInf << " ";
